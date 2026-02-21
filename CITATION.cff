@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "Information Recovery under Deterministic Masking in Exponential Series Systems"
+type: article
+authors:
+  - family-names: Towell
+    given-names: Alexander
+    orcid: "https://orcid.org/0000-0001-6443-9897"
+    email: lex@metafunctor.com
+date-released: "2025-02-21"
+keywords:
+  - reliability
+  - series systems
+  - masked data
+  - Fisher information
+  - deterministic masking
+  - exponential distribution
+  - competing risks
+license: CC-BY-4.0
+repository-code: "https://github.com/queelius/deterministic-masking"
