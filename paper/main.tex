@@ -1,0 +1,453 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[numbers]{natbib}
+\usepackage{bbm}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+
+% Notation macros (consistent with parent paper)
+\newcommand{\RV}[1]{\mathrm{#1}}
+\newcommand{\Prob}[1]{\mathrm{P}\{#1\}}
+\newcommand{\Expect}[1]{\mathrm{E}\{#1\}}
+\newcommand{\cv}{\RV{T}}           % Component lifetime
+\newcommand{\sv}{\RV{S}}           % System lifetime
+\newcommand{\cand}{\RV{C}}         % Candidate set
+\newcommand{\tparam}[1]{{#1}^{\star}}  % True parameter
+\newcommand{\estimator}[1]{\hat{#1}}   % MLE estimator
+\newcommand{\infomatrx}{\mathcal{I}}
+\newcommand{\pdf}{f}
+\newcommand{\pmf}{p}
+\newcommand{\cdf}{F}
+\newcommand{\srv}{R}
+\newcommand{\expdist}{\mathrm{EXP}}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\SetIndicator}[1]{\mathbbm{1}_{#1}}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\graphicspath{{images/}{../images/}{../../images/}}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+\title{Information Recovery under Deterministic Masking\\in Exponential Series Systems}
+\author{Alexander Towell}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+In masked system failure data, the candidate set of possibly failed components is
+conventionally assumed to degrade estimation precision as its cardinality grows.
+We show that for exponential series systems, a deterministic masking mechanism
+that injectively maps each failure cause to a unique candidate set recovers the
+complete-identification Fisher information matrix---regardless of the candidate
+set cardinality. Information loss from masking is thus a property of the masking
+\emph{mechanism}, not the masking \emph{cardinality}. We verify this result
+numerically via Monte Carlo simulation.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+
+In series (or $m$-out-of-$m$) reliability systems, all components must function
+for the system to operate. When a system fails, diagnostics may identify only a
+\emph{candidate set} $C \subseteq \{1,\ldots,m\}$ of components that could have
+caused the failure, rather than the exact failure cause. This is known as
+\emph{masked failure data}~\cite{miyakawa1984}.
+
+A central question in the masked-data literature is how the masking mechanism
+affects estimation precision. The conventional wisdom, supported by results on
+mutual information between the failure cause and the candidate set, is that
+larger candidate sets carry less information and therefore yield less precise
+parameter estimates. Under the widely studied uniform masking
+model~\cite{miyakawa1984, towell2023reliability, towell2025masked}, this monotonicity indeed
+holds: the Fisher information matrix (FIM) degrades strictly as the masking
+cardinality $w = |C|$ increases from $1$ (exact identification) toward $m$
+(complete masking).
+
+The purpose of this note is to show that this monotonicity is an artifact of the
+uniform masking assumption, not a general feature of masked data.
+Specifically, we construct a deterministic masking mechanism at any cardinality
+$w \leq m-1$ under which the FIM equals that of complete identification ($w=1$).
+The key insight is that information loss depends on the \emph{structure} of the
+masking mechanism---whether the failure cause can be recovered from the candidate
+set---not on the candidate set cardinality per se.
+
+This result has implications for diagnostic system design: a well-engineered
+diagnostic that maps each failure mode to a unique signature, even one that
+reports a large candidate set, incurs no information loss whatsoever for
+parameter estimation.
+
+\section{Model}
+\label{sec:model}
+
+\subsection{Exponential series systems}
+
+Consider a series system of $m$ independent components with lifetimes
+$\cv_1, \ldots, \cv_m$, where component $j$ has an exponential distribution
+$\cv_j \sim \expdist(\tparam{\lambda}_j)$ with rate $\tparam{\lambda}_j > 0$.
+The system lifetime is $\sv = \min(\cv_1, \ldots, \cv_m)$, and the failed
+component is $\RV{K} = \arg\min_j \cv_j$.
+
+The system lifetime is exponentially distributed with rate
+$\Lambda = \sum_{j=1}^{m} \tparam{\lambda}_j$~\cite{barlow1975}. A crucial
+property of the exponential case is that the failure cause and system lifetime
+are independent.
+
+\begin{proposition}[Independence of failure cause and system lifetime]
+\label{prop:K_indep_S}
+For exponential series systems, $\RV{K}$ and $\sv$ are independent with
+$\Prob{\RV{K} = k} = \tparam{\lambda}_k / \Lambda$.
+\end{proposition}
+
+\begin{proof}
+The joint CDF factorizes:
+\begin{align}
+\Prob{\RV{K} = k, \sv \leq t}
+  &= \int_0^t \tparam{\lambda}_k \exp(-\Lambda s) \, ds
+  = \frac{\tparam{\lambda}_k}{\Lambda}\bigl(1 - e^{-\Lambda t}\bigr)
+  = \Prob{\RV{K} = k} \cdot \Prob{\sv \leq t},
+\end{align}
+since $\Prob{\RV{K}=k} = \tparam{\lambda}_k/\Lambda$ and
+$\Prob{\sv \leq t} = 1 - e^{-\Lambda t}$.
+\end{proof}
+
+This independence is specific to the exponential (constant hazard) case; for
+distributions with time-varying hazard rates, $\RV{K}$ and $\sv$ are generally
+dependent~\cite{cox1959}.
+
+\subsection{Masking mechanisms}
+
+Upon observing a system failure at time $t$, a diagnostic procedure reports a
+\emph{candidate set} $\cand \subseteq \{1,\ldots,m\}$ containing the failed
+component $\RV{K}$. The \emph{masking mechanism} is the conditional distribution
+$\Prob{\cand = c \mid \RV{K} = k}$, subject to the containment constraint
+$k \in c$. We assume the mechanism depends only on $\RV{K}$ and not on $\sv$ or
+on the parameter $\tparam{\vec\lambda}$.
+
+The joint density of the observed data $(t, c)$ under a general masking
+mechanism is:
+\begin{equation}
+\label{eq:general_joint}
+\pdf(t, c \mid \tparam{\vec\lambda})
+  = \Prob{\cand = c \mid \RV{K} = k} \cdot \tparam{\lambda}_k \exp(-\Lambda t)
+  \quad\text{summed over } k \in c,
+\end{equation}
+i.e.,
+\begin{equation}
+\label{eq:general_joint_expanded}
+\pdf(t, c \mid \tparam{\vec\lambda})
+  = \sum_{k \in c} \Prob{\cand = c \mid \RV{K} = k} \cdot \tparam{\lambda}_k \exp(-\Lambda t).
+\end{equation}
+Here we have used the factorization
+$\pdf_{\RV{K},\sv}(k,t) = \tparam{\lambda}_k \exp(-\Lambda t)$ from
+Proposition~\ref{prop:K_indep_S} and the assumption that masking is independent
+of $\sv$.
+
+\subsection{Fisher information under general masking}
+
+The FIM for the parameter $\tparam{\vec\lambda}$ from a single observation
+$(t, c)$ under a general masking mechanism is:
+\begin{equation}
+\label{eq:general_fim}
+[\infomatrx(\tparam{\vec\lambda})]_{j\ell}
+  = - \Expect{\frac{\partial^2}{\partial \lambda_j \partial \lambda_\ell}
+    \ln \pdf(\sv, \cand \mid \vec\lambda)}\bigg|_{\tparam{\vec\lambda}}.
+\end{equation}
+For \emph{uniform masking} at cardinality $w$, where
+$\Prob{\cand = c \mid \RV{K} = k} = 1/\binom{m-1}{w-1}$ for each $c$ of size
+$w$ containing $k$, the FIM takes the form~\cite{towell2025masked}:
+\begin{equation}
+\label{eq:uniform_fim}
+[\infomatrx(\tparam{\vec\lambda} \mid w)]_{j\ell}
+  = \frac{1}{\binom{m-1}{w-1}\,\Lambda}
+    \sum_{\substack{c:\,|c|=w \\ j \in c,\; \ell \in c}}
+    \frac{1}{\sum_{p \in c} \tparam{\lambda}_p}.
+\end{equation}
+
+At $w=1$ (exact identification), each observation reveals $\RV{K}$ directly, and
+the FIM is diagonal:
+\begin{equation}
+\label{eq:fim_w1}
+[\infomatrx(\tparam{\vec\lambda} \mid w\!=\!1)]_{j\ell}
+  = \frac{\delta_{j\ell}}{\Lambda\, \tparam{\lambda}_j},
+\end{equation}
+where $\delta_{j\ell}$ is the Kronecker delta.
+
+\section{Main Result}
+\label{sec:main}
+
+\begin{definition}[Separating-deterministic masking]
+\label{def:sep_det}
+A masking mechanism at cardinality $w$ is \emph{separating-deterministic} if
+there exists an injection $\varphi\colon \{1,\ldots,m\} \to \{c \subseteq
+\{1,\ldots,m\} : |c| = w\}$ satisfying:
+\begin{enumerate}
+\item $k \in \varphi(k)$ for each $k$ (containment), and
+\item $\Prob{\cand = \varphi(k) \mid \RV{K} = k} = 1$ for each $k$
+      (determinism).
+\end{enumerate}
+\end{definition}
+
+The injectivity of $\varphi$ means that distinct failure causes produce distinct
+candidate sets, so $\varphi^{-1}$ recovers $\RV{K}$ with certainty from the
+observed $\cand$.
+
+\begin{theorem}[Information recovery under deterministic masking]
+\label{thm:main}
+For an $m$-component exponential series system with rates
+$\tparam{\vec\lambda} = (\tparam{\lambda}_1,\ldots,\tparam{\lambda}_m)$,
+suppose the masking mechanism is separating-deterministic with injection
+$\varphi$. Then the Fisher information matrix equals that of complete
+identification:
+\begin{equation}
+\label{eq:main_result}
+[\infomatrx(\tparam{\vec\lambda} \mid \varphi)]_{j\ell}
+  = \frac{\delta_{j\ell}}{\Lambda\, \tparam{\lambda}_j}
+  = [\infomatrx(\tparam{\vec\lambda} \mid w\!=\!1)]_{j\ell}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Under a separating-deterministic mechanism with injection $\varphi$, the masking
+probabilities are $\Prob{\cand = c \mid \RV{K} = k} = \mathbbm{1}\{c =
+\varphi(k)\}$. Substituting into~\eqref{eq:general_joint_expanded}:
+\begin{equation}
+\label{eq:det_joint}
+\pdf(t, c \mid \tparam{\vec\lambda})
+  = \sum_{k \in c} \mathbbm{1}\{c = \varphi(k)\} \cdot \tparam{\lambda}_k
+    \exp(-\Lambda t).
+\end{equation}
+Since $\varphi$ is injective, for each candidate set $c$ in the image of
+$\varphi$, there is exactly one $k^*(c) = \varphi^{-1}(c)$ such that
+$\varphi(k^*) = c$. The sum collapses to:
+\begin{equation}
+\pdf(t, c \mid \tparam{\vec\lambda})
+  = \tparam{\lambda}_{k^*(c)} \exp(-\Lambda t).
+\end{equation}
+Taking the logarithm:
+\begin{equation}
+\ln \pdf(t, c \mid \tparam{\vec\lambda})
+  = \ln \tparam{\lambda}_{k^*(c)} - \Lambda\, t.
+\end{equation}
+This has the same functional form as the log-density under exact identification
+($w=1$), where one observes $(t, k)$ with density
+$\tparam{\lambda}_k \exp(-\Lambda t)$. Specifically, $c$ plays the role of $k$
+through the bijection $k^* = \varphi^{-1}(c)$.
+
+Computing second derivatives:
+\begin{equation}
+\frac{\partial^2}{\partial \lambda_j \partial \lambda_\ell}
+  \ln \pdf(t, c \mid \vec\lambda)
+  = - \frac{\delta_{j,k^*(c)} \cdot \delta_{\ell,k^*(c)}}{\lambda_{k^*(c)}^2}.
+\end{equation}
+Taking the negative expectation:
+\begin{align}
+[\infomatrx(\tparam{\vec\lambda} \mid \varphi)]_{j\ell}
+  &= \sum_{c \in \mathrm{Im}(\varphi)} \int_0^\infty
+     \frac{\delta_{j,k^*(c)} \cdot \delta_{\ell,k^*(c)}}{(\tparam{\lambda}_{k^*(c)})^2}
+     \cdot \tparam{\lambda}_{k^*(c)} \exp(-\Lambda t)\, dt \nonumber\\
+  &= \sum_{k=1}^{m}
+     \frac{\delta_{jk}\,\delta_{\ell k}}{(\tparam{\lambda}_k)^2}
+     \cdot \tparam{\lambda}_k \cdot \frac{1}{\Lambda}
+  = \frac{\delta_{j\ell}}{\Lambda\, \tparam{\lambda}_j},
+\end{align}
+where in the second line we re-indexed the sum using $k = k^*(c) =
+\varphi^{-1}(c)$ as $c$ ranges over $\mathrm{Im}(\varphi)$, and used
+$\int_0^\infty e^{-\Lambda t}\, dt = 1/\Lambda$.
+\end{proof}
+
+\begin{corollary}[Existence at maximum cardinality]
+\label{cor:derangement}
+For $w = m-1$ and $m \geq 2$, separating-deterministic mechanisms exist.
+In particular, any derangement $\sigma$ of $\{1,\ldots,m\}$ (a permutation with
+no fixed points) defines such a mechanism via
+$\varphi(k) = \{1,\ldots,m\} \setminus \{\sigma(k)\}$.
+\end{corollary}
+
+\begin{proof}
+We verify the two conditions of Definition~\ref{def:sep_det}.
+\emph{Containment:} Since $\sigma$ is a derangement, $\sigma(k) \neq k$, so
+$k \notin \{\sigma(k)\}$ and hence $k \in \{1,\ldots,m\}\setminus\{\sigma(k)\}
+= \varphi(k)$.
+\emph{Injectivity:} If $\varphi(k) = \varphi(k')$, then
+$\{1,\ldots,m\}\setminus\{\sigma(k)\} = \{1,\ldots,m\}\setminus\{\sigma(k')\}$,
+so $\sigma(k) = \sigma(k')$, and since $\sigma$ is a permutation, $k = k'$.
+Derangements of $\{1,\ldots,m\}$ exist for all $m \geq 2$ (the simplest is the
+cyclic shift $\sigma(k) = (k \bmod m) + 1$).
+\end{proof}
+
+\begin{remark}[Diagnostic information vs.\ estimation precision]
+\label{rem:IKC_vs_FIM}
+Proposition~\ref{prop:K_indep_S} enables a clean separation between two
+information-theoretic quantities:
+\begin{itemize}
+\item The \emph{mutual information} $\mathrm{I}(\RV{K}; \cand)$ measures how
+  well the candidate set identifies the failed component. Under uniform masking,
+  this decreases monotonically with $w$.
+\item The \emph{Fisher information matrix} $\infomatrx(\tparam{\vec\lambda})$
+  measures how precisely the parameters can be estimated.
+\end{itemize}
+These quantities need not track together. Under separating-deterministic masking
+at $w = m-1$, $\mathrm{I}(\RV{K}; \cand) = \mathrm{H}(\RV{K})$ (maximal
+diagnostic information, since $\cand$ determines $\RV{K}$), and the FIM matches
+$w=1$. Under uniform masking at $w = m-1$, $\mathrm{I}(\RV{K};\cand)$ is
+minimized among all identifiable mechanisms, and the FIM is strictly degraded.
+The separating-deterministic mechanism achieves both maximal diagnostic
+information and maximal estimation precision simultaneously.
+
+Note that the separating-deterministic mechanism violates the symmetry condition
+C2 of the standard C1--C2--C3 framework~\cite{towell2023reliability}: we have
+$\Prob{\cand = \varphi(k) \mid \RV{K} = k} = 1$ but
+$\Prob{\cand = \varphi(k) \mid \RV{K} = k'} = 0$ for $k' \neq k$ with
+$k' \in \varphi(k)$. The C2 assumption---which requires masking probabilities to
+be symmetric across components within the candidate set---is precisely what costs
+information under uniform masking.
+\end{remark}
+
+\section{Numerical Verification}
+\label{sec:numerical}
+
+We verify Theorem~\ref{thm:main} via Monte Carlo simulation. For each of two
+configurations ($m=3$ with $\tparam{\vec\lambda} = (1,3,5)$ and $m=5$ with
+$\tparam{\vec\lambda} = (1,2,3,5,7)$), we generate $R = 100{,}000$ independent
+samples of size $n$ from the joint distribution $(\sv, \RV{K})$. From each
+sample, we construct three datasets by applying three different masking
+mechanisms to the \emph{same} underlying $(\sv, \RV{K})$ data:
+\begin{enumerate}
+\item \textbf{No masking} ($w=1$): observe $\RV{K}$ directly.
+\item \textbf{Deterministic} ($w=m-1$): apply the cyclic derangement
+  $\sigma(k) = (k \bmod m) + 1$ and set
+  $\cand = \{1,\ldots,m\}\setminus\{\sigma(\RV{K})\}$.
+\item \textbf{Uniform} ($w=m-1$): include each non-failed component
+  independently with equal probability; equivalently, exclude one uniformly
+  random non-failed component.
+\end{enumerate}
+
+For mechanisms~(1) and~(2), the MLE is
+$\estimator{\lambda}_j = n_j / (n\bar{t})$ where $n_j$ counts observations
+attributed to component~$j$ (for mechanism~(2), the recovery
+$\varphi^{-1}(\cand)$ yields the same counts as mechanism~(1)). For
+mechanism~(3), we use the closed-form MLE for uniform masking at
+$w=m-1$~\cite{towell2025masked}.
+
+Table~\ref{tab:variances} reports the empirical variances (scaled by $n$) at
+$n = 2000$ alongside theoretical predictions. The quantities $n \cdot
+\mathrm{Var}(\estimator{\lambda}_j)$ converge to
+$[\infomatrx^{-1}]_{jj}$~\cite{bickel}. As predicted by
+Theorem~\ref{thm:main}, mechanisms~(1) and~(2) yield identical empirical
+variances, both matching the $w=1$ theory $\Lambda \tparam{\lambda}_j$. The
+uniform mechanism produces substantially larger variances.
+
+\begin{table}[ht]
+\centering
+\caption{Scaled empirical variances $n \cdot \mathrm{Var}(\estimator{\lambda}_j)$ at $n = 2000$,
+  $R = 100{,}000$ replications. Theory: $\Lambda \tparam{\lambda}_j$ for $w\!=\!1$
+  and deterministic.}
+\label{tab:variances}
+\smallskip
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Config.\ & Mechanism & $j=1$ & $j=2$ & $j=3$ \\
+\midrule
+\multirow{3}{*}{$m\!=\!3$, $\vec\lambda\!=\!(1,3,5)$}
+  & $w\!=\!1$ (theory / empirical) & 9.00 / 9.02 & 27.00 / 27.08 & 45.00 / 45.09 \\
+  & Deterministic $w\!=\!2$        & 9.00 / 9.02 & 27.00 / 27.08 & 45.00 / 45.09 \\
+  & Uniform $w\!=\!2$              & 81.00 / 80.79 & 81.00 / 81.48 & 81.00 / 80.47 \\
+\midrule
+  & & $j=1$ & $j=2$ & $j=3$ \\
+\multirow{3}{*}{$m\!=\!5$, $\vec\lambda\!=\!(1,2,3,5,7)$}
+  & $w\!=\!1$ (theory / empirical) & 18.00 / 18.04 & 36.00 / 36.04 & 54.00 / 54.16 \\
+  & Deterministic $w\!=\!4$        & 18.00 / 18.04 & 36.00 / 36.04 & 54.00 / 54.16 \\
+  & Uniform $w\!=\!4$              & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\footnotesize
+Note: Columns $j=4,5$ omitted for space; all components exhibit the same pattern.
+Uniform $w\!=\!4$ variances for $m\!=\!5$ are configuration-specific and substantially larger.
+\end{table}
+
+Figure~\ref{fig:verification} shows the convergence of
+$\mathrm{Var}(\estimator{\lambda}_1)$ across sample sizes $n \in \{50, 100,
+200, 500, 1000, 2000\}$. In both configurations, the no-masking and
+deterministic curves are indistinguishable and converge to the same theoretical
+prediction, while the uniform masking curve converges to a strictly larger
+variance.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{fig_deterministic_masking.pdf}
+\caption{Empirical variance of $\estimator{\lambda}_1$ under three masking
+  mechanisms. (a) $m=3$, $\tparam{\vec\lambda} = (1,3,5)$.
+  (b) $m=5$, $\tparam{\vec\lambda} = (1,2,3,5,7)$. Dotted lines show
+  theoretical predictions. The no-masking and deterministic curves are
+  indistinguishable, confirming Theorem~\ref{thm:main}.}
+\label{fig:verification}
+\end{figure}
+
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Practical implications.}
+Theorem~\ref{thm:main} shows that a diagnostic procedure need not identify the
+exact failure cause to achieve full estimation efficiency---it suffices for each
+failure mode to produce a \emph{unique diagnostic signature}. In engineering
+applications, a diagnostic that consistently maps failure mode $k$ to a specific
+alarm pattern $\varphi(k)$, even one involving multiple components, is as
+informative as exact identification for the purpose of estimating component
+failure rates.
+
+\paragraph{Limitations.}
+The result depends on the exponential lifetime assumption through
+Proposition~\ref{prop:K_indep_S}: the independence of $\RV{K}$ and $\sv$ is what
+allows the masking mechanism to be ``undone'' by the injection $\varphi^{-1}$.
+For Weibull or other distributions where $\RV{K}$ depends on $\sv$, the
+conditional distribution $\pdf(t \mid \RV{K} = k)$ varies with $k$, and
+observing $\cand = \varphi(k)$ recovers $\RV{K}$ but not the full conditional
+structure. Whether an analogous result holds approximately when hazard rates vary
+slowly is an open question.
+
+\paragraph{Open questions.}
+Two directions are natural. First, a \emph{perturbation analysis}: how does the
+FIM degrade continuously as the masking mechanism moves from deterministic toward
+uniform? Characterizing the functional form of the information loss as the
+mechanism becomes ``noisier'' would connect the discrete result of
+Theorem~\ref{thm:main} to the information-loss landscape. Second,
+\emph{optimal mechanism design}: among all masking mechanisms at a given
+cardinality $w$, which maximizes the determinant of the FIM? When $m \leq
+\binom{m}{w}$, an injection $\varphi$ exists and the answer may always be
+deterministic, but this requires proof.
+
+\paragraph{Acknowledgements.}
+This result was developed as part of ongoing work extending the author's
+master's project~\cite{towell2023reliability}. Simulation code and data are
+available at \url{https://github.com/queelius/deterministic-masking}.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
