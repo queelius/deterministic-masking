@@ -7,6 +7,19 @@ paper/*.fls
 paper/*.log
 paper/*.out
 paper/*.synctex.gz
+paper/*.spl
+
+# Submission build artifacts
+submission/*.aux
+submission/*.bbl
+submission/*.blg
+submission/*.fdb_latexmk
+submission/*.fls
+submission/*.log
+submission/*.out
+submission/*.synctex.gz
+submission/*.spl
+submission/*.pdf
 
 # R output
 .Rhistory
