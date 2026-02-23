@@ -1,0 +1,50 @@
+\begin{thebibliography}{1}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{miyakawa1984}
+M.~Miyakawa, Analysis of incomplete data in competing risks model, IEEE
+  Transactions on Reliability 33~(4) (1984) 293--296.
+\newblock \href {https://doi.org/10.1109/TR.1984.5221843}
+  {\path{doi:10.1109/TR.1984.5221843}}.
+
+\bibitem{towell2023reliability}
+A.~Towell, Reliability estimation in series systems: Maximum likelihood
+  techniques for right-censored and masked failure data, Master's thesis,
+  Southern Illinois University Edwardsville, available at
+  \url{https://github.com/queelius/reliability-estimation-in-series-systems}
+  (2023).
+\newblock \href {https://doi.org/10.5281/zenodo.18615871}
+  {\path{doi:10.5281/zenodo.18615871}}.
+
+\bibitem{towell2025masked}
+A.~Towell, Masked causes of failure in series systems: {A} likelihood
+  framework, early preprint, under active development (2025).
+\newblock \href {https://doi.org/10.5281/zenodo.18725577}
+  {\path{doi:10.5281/zenodo.18725577}}.
+
+\bibitem{barlow1975}
+R.~E. Barlow, F.~Proschan, Statistical Theory of Reliability and Life Testing:
+  Probability Models, Holt, Rinehart and Winston, New York, 1975.
+
+\bibitem{cox1959}
+D.~R. Cox, The analysis of exponentially distributed life-times with two types
+  of failure, Journal of the Royal Statistical Society: Series B
+  (Methodological) 21~(2) (1959) 411--421.
+\newblock \href {https://doi.org/10.1111/j.2517-6161.1959.tb00349.x}
+  {\path{doi:10.1111/j.2517-6161.1959.tb00349.x}}.
+
+\bibitem{towell2025expo}
+A.~Towell, Statistical inference for series systems from masked failure time
+  data: {The} exponential case, preprint (2025).
+\newblock \href {https://doi.org/10.5281/zenodo.18344335}
+  {\path{doi:10.5281/zenodo.18344335}}.
+
+\bibitem{bickel}
+P.~Bickel, K.~Doksum, Mathematical Statistics, 2nd Edition, Vol.~1, Prentice
+  Hall, 2000, Ch.~2, p. 117.
+
+\end{thebibliography}

@@ -1,0 +1,20 @@
+Dear Editor,
+
+Please find enclosed our manuscript "Information Recovery under Deterministic Masking in
+Exponential Series Systems" for consideration in the Journal of Statistical Planning and
+Inference.
+
+We show that for exponential series systems, a deterministic masking mechanism recovers the
+complete-identification Fisher information matrix regardless of candidate set cardinality.
+This result overturns the conventional assumption that larger candidate sets necessarily
+degrade estimation precision, revealing that information loss is a property of the masking
+mechanism's structure, not its cardinality. The result is verified via Monte Carlo
+simulation.
+
+The manuscript has not been published or submitted elsewhere. The author has no conflicts of
+interest to declare.
+
+Thank you for your consideration.
+
+Sincerely,
+Alexander Towell
